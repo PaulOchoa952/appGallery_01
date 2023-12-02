@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "296011680026",
+    "project_id": "video2-781f0",
+    "storage_bucket": "video2-781f0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296011680026:android:fdebbfb3df154799c984a3",
+        "android_client_info": {
+          "package_name": "mx.edu.ittepic.video2u3"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8IgCjEBLw-YgMsbgmE4ggfcxnw1AAnKo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
