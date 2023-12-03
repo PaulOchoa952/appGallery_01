@@ -50,19 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD8IgCjEBLw-YgMsbgmE4ggfcxnw1AAnKo',
-    appId: '1:296011680026:android:fdebbfb3df154799c984a3',
-    messagingSenderId: '296011680026',
-    projectId: 'video2-781f0',
-    storageBucket: 'video2-781f0.appspot.com',
+    apiKey: 'AIzaSyAomvT4oGRiK8ZIq7pqNF2souzGDAAWzxM',
+    appId: '1:4816638118:android:7570dc12acce6adbb16467',
+    messagingSenderId: '4816638118',
+    projectId: 'dam-u4-appgallery',
+    storageBucket: 'dam-u4-appgallery.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBPsNqZlZ2kf6atpd5S8gQ2AADY_Mw33-c',
-    appId: '1:296011680026:ios:ee3667dddb5dd35ec984a3',
-    messagingSenderId: '296011680026',
-    projectId: 'video2-781f0',
-    storageBucket: 'video2-781f0.appspot.com',
+    apiKey: 'AIzaSyAIMPYOiWkVnzCt6qIBR25TOjWa583xomU',
+    appId: '1:4816638118:ios:9585355391319a7bb16467',
+    messagingSenderId: '4816638118',
+    projectId: 'dam-u4-appgallery',
+    storageBucket: 'dam-u4-appgallery.appspot.com',
     iosBundleId: 'mx.edu.ittepic.video2u3',
   );
 }
