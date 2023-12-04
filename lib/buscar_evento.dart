@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:video2u3/login.dart';
 
 class buscarevento extends StatefulWidget {
   const buscarevento({super.key});
@@ -13,6 +15,7 @@ class _buscareventoState extends State<buscarevento> {
   String evento="";
   String nombre="";
   String descripcion="";
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   Widget build(BuildContext context) {
     return  Scaffold(
       appBar: AppBar(
@@ -37,7 +40,8 @@ class _buscareventoState extends State<buscarevento> {
               decoration: BoxDecoration(color: Colors.blueAccent),
             ),
             _item(Icons.add,"Buscar evento",1),
-            _item(Icons.list,"Visualizar eventos",2)
+            _item(Icons.list,"Visualizar eventos",2),
+            _item(Icons.logout, "Salir", 3)
           ],
         ),
       ),
@@ -50,7 +54,12 @@ class _buscareventoState extends State<buscarevento> {
         setState(() {
           _index=indice;
         });
-        Navigator.pop(context);
+        // Handle the logout action
+        if (_index == 3) {
+          _handleLogout();
+        } else {
+          Navigator.pop(context);
+        }
       },
       title: Row(
         children: [Expanded(child: Icon(icono)), Expanded(child: Text(texto),flex: 2,)],
@@ -63,6 +72,22 @@ class _buscareventoState extends State<buscarevento> {
       return BuscarEvento();
     }
     return BuscarEvento();
+  }
+
+  void _handleLogout() async{
+    try {
+      // Perform any additional logout logic here
+      // For example, sign out from Firebase
+      await FirebaseAuth.instance.signOut();
+
+      // Navigate to the login screen after logout
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Login()), // Import your login screen file
+      );
+    } catch (e) {
+      print("Error during logout: $e");
+    }
   }
 
   Widget BuscarEvento(){

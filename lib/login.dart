@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:video2u3/buscar_evento.dart';
 import 'regisgtrar.dart';
 
 void main() {
@@ -28,17 +29,24 @@ class _LoginState extends State<Login> {
   String email = "";
   String contrasena = "";
 
-  void _handleLogin() async{
-    try{
+  void _handleLogin() async {
+    try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: email,
-          password: contrasena
+        email: email,
+        password: contrasena,
       );
-      print("Se accedio con el usario: ${userCredential.user!.email}");
-    }catch(e){
+      print("Se accedió con el usuario: ${userCredential.user!.email}");
+
+      // Navigate to the main menu after successful login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => buscarevento()),
+      );
+    } catch (e) {
       print("Error al intentar loggearse: $e");
     }
   }
+
 
   void _handleForgotPassword() {
     // Implement your forgot password logic here
