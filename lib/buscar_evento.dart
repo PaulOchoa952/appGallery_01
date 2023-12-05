@@ -54,7 +54,7 @@ class _buscareventoState extends State<buscarevento> {
               decoration: BoxDecoration(color: Color(0xFFE1BEE7)),
             ),
             _item(Icons.cake,"Mis Eventos",0),
-            _item(Icons.add,"Buscar evento",1),
+            _item(Icons.search,"Buscar evento",1),
             _item(Icons.event,"Invitaciones",2),
             _item(Icons.logout, "Salir", 3)
           ],
