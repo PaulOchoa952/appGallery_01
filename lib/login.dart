@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:video2u3/buscar_evento.dart';
+import 'package:video2u3/serviciosremotos.dart';
 import 'regisgtrar.dart';
 
 void main() {
@@ -35,12 +36,12 @@ class _LoginState extends State<Login> {
         email: email,
         password: contrasena,
       );
-      print("Se accedió con el usuario: ${userCredential.user!.email}");
-
+      print("Se accedió con el usuario: ${userCredential.user!.email} e id : ${userCredential.user!.uid}");
+      var datos = await DB.buscarUidLogin(userCredential.user!.uid);
       // Navigate to the main menu after successful login
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => buscarevento()),
+        MaterialPageRoute(builder: (context) => buscarevento(datos: datos)),
       );
     } catch (e) {
       print("Error al intentar loggearse: $e");

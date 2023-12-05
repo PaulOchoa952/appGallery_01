@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:video2u3/serviciosremotos.dart';
 import 'login.dart';
 
 class registrar extends StatefulWidget {
@@ -15,9 +16,12 @@ class _registrarState extends State<registrar> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _emailCont = TextEditingController();
   TextEditingController _contrasenaCont = TextEditingController();
+  TextEditingController _nombre = TextEditingController();
 
   String email = "";
   String contrasena = "";
+  String nombre= "";
+
 
   void _handleRegistrar() async{
     try{
@@ -26,6 +30,13 @@ class _registrarState extends State<registrar> {
           password: contrasena
       );
       print("Usuario registrado: ${userCredential.user!.email}");
+      var user={
+        "uidUser":userCredential.user!.uid,
+        "correo":email,
+        "nombre":nombre,
+        "img":"https://www.pinpng.com/pngs/m/118-1189636_667-x-667-1-no-avatar-male-female.png"
+      };
+      await DB.insertar(user);
       Navigator.push(context, MaterialPageRoute(builder: (context) => Login()),);
     }catch(e){
       print("Error al interntar registrar al usuario: $e");
@@ -178,6 +189,13 @@ class _registrarState extends State<registrar> {
                                 ),
                                 Container(
                                   padding: EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Color.fromRGBO(143, 148, 251, 1),
+                                      ),
+                                    ),
+                                  ),
                                   child: TextFormField(
                                     controller: _contrasenaCont,
                                     keyboardType:  TextInputType.text,
@@ -201,7 +219,33 @@ class _registrarState extends State<registrar> {
                                       });
                                     },
                                   ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: TextFormField(
+                                    controller: _nombre,
+                                    keyboardType:  TextInputType.text,
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: "Nombre",
+                                      hintStyle: TextStyle(
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                    validator: (value){
+                                      if(value == null || value.isEmpty){
+                                        return "Ingrese el nombre";
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) {
+                                      setState(() {
+                                        nombre = value;
+                                      });
+                                    },
+                                  ),
                                 )
+
                               ],
                             ),
                           ),
