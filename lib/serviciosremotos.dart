@@ -53,7 +53,7 @@ class DB{
 
   static Future<Map<String,dynamic>> buscarUidLogin(String uid) async{
     try {
-      CollectionReference collection = FirebaseFirestore.instance.collection('user');
+      CollectionReference collection = baseRemota.collection('user');
       var query = await collection.where('uidUser', isEqualTo: uid).get();
       if (query.docs.isNotEmpty) {
         var doc = query.docs.first;
@@ -75,12 +75,12 @@ class DB{
 
   static Future<Map<String, dynamic>?> buscarEventoPorId(String idEvento) async {
     try {
-      var snapshot = await FirebaseFirestore.instance.collection("evento").doc(idEvento).get();
-      if (snapshot.exists) {
-        Map<String, dynamic> datosEvento = snapshot.data() as Map<String, dynamic>;
-        var adminSnapshot = await FirebaseFirestore.instance.collection("user").doc(datosEvento['admin']).get();
-        if (adminSnapshot.exists) {
-          Map<String, dynamic> datosAdmin = adminSnapshot.data() as Map<String, dynamic>;
+      var evento = await baseRemota.collection("evento").doc(idEvento).get();
+      if (evento.exists) {
+        Map<String, dynamic> datosEvento = evento.data() as Map<String, dynamic>;
+        var admin= await baseRemota.collection("user").doc(datosEvento['admin']).get();
+        if (admin.exists) {
+          Map<String, dynamic> datosAdmin = admin.data() as Map<String, dynamic>;
 
           datosEvento.addAll({'nombreAdmin': datosAdmin['nombre']});
         }
@@ -97,6 +97,30 @@ class DB{
     }
   }
 
+
+  static Future<void> agregarInvitado(String idEvento, String idInvitado) async {
+    try {
+      var evento = baseRemota.collection("evento").doc(idEvento);
+
+      var eventoSnapshot = await evento.get();
+      var datosEvento = eventoSnapshot.data() as Map<String, dynamic>?;
+
+      if (datosEvento != null) {
+        var invitadosActuales = List<String>.from(datosEvento['invitados']);
+        invitadosActuales.add(idInvitado);
+
+        await evento.update({
+          'invitados': invitadosActuales,
+        });
+
+        print("Invitado agregado con éxito.");
+      } else {
+        print("No se encontraron datos para el evento con ID: $idEvento");
+      }
+    } catch (e) {
+      print("Error al agregar invitado: $e");
+    }
+  }
 
 
 /*

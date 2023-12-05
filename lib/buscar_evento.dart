@@ -22,6 +22,7 @@ class _buscareventoState extends State<buscarevento> {
   String nombre="";
   String descripcion="";
   String titulo= "Mis Eventos";
+  final eventid = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   Widget build(BuildContext context) {
 
@@ -137,7 +138,7 @@ class _buscareventoState extends State<buscarevento> {
   }
 
   Widget BuscarEvento(){
-    final eventid = TextEditingController();
+
     return ListView(
       padding: EdgeInsets.all(40),
       children: [
@@ -161,7 +162,7 @@ class _buscareventoState extends State<buscarevento> {
         Text("Descripcion: ${descripcion}"),
         SizedBox(height: 20,),
         FilledButton(onPressed: (){
-
+          DB.agregarInvitado(eventid.text, widget.datos['id']);
         }, child: const Text("Agregar"))
 
       ],
