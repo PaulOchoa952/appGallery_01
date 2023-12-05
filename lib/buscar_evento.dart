@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter/material.dart';
 import 'package:video2u3/login.dart';
 import 'package:video2u3/serviciosremotos.dart';
+import 'package:image_picker/image_picker.dart';
 
 class buscarevento extends StatefulWidget {
   final Map<String, dynamic> datos;
@@ -24,13 +24,23 @@ class _buscareventoState extends State<buscarevento> {
   String titulo= "Mis Eventos";
   final eventid = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  TextEditingController descripcionController = TextEditingController();
+  final fechaInicial = TextEditingController();
+  final fechaFinal = TextEditingController();
+  DateTime selectedDate = DateTime.now();
+  bool permitirAgregarFotos = false;
+  String tipoEventoSeleccionado = "Boda"; // Puedes inicializarlo con el primer tipo de evento
+
   Widget build(BuildContext context) {
 
     return  Scaffold(
       appBar: AppBar(
         title:  Text(titulo, style: TextStyle(color: Colors.white),),
         centerTitle: true,
+        actions: _botonMagico(),
       ),
+
       body: dinamico(),
       drawer: Drawer(
         child: ListView(
@@ -63,6 +73,23 @@ class _buscareventoState extends State<buscarevento> {
     );
   }
 
+  List<Widget> _botonMagico() {
+    if (_index == 0) {
+      return [
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () {
+            setState(() {
+              _index = 3;
+            });
+          },
+        ),
+      ];
+    } else {
+      return [];
+    }
+  }
+
   Widget _item(IconData icono,String texto,int indice){
     return ListTile(
       onTap: (){
@@ -85,6 +112,12 @@ class _buscareventoState extends State<buscarevento> {
               {
                 setState(() {
                   titulo = "Invitaciones";
+                });
+              }
+            case 3 :
+              {
+                setState(() {
+                  titulo = "Crear Evento";
                 });
               }
           }
@@ -116,6 +149,9 @@ class _buscareventoState extends State<buscarevento> {
       case 2 : {
 
         return invitaciones();
+      }
+      case 3 : {
+        return crearEvento();
       }
     }
     return BuscarEvento();
@@ -361,6 +397,180 @@ class _buscareventoState extends State<buscarevento> {
         }
     );
   }
+
+  Widget crearEvento(){
+    return FutureBuilder(
+        future: DB.MisEventos(widget.datos['id']),
+        builder: (context,listaJSON){
+          if(listaJSON.hasData){
+            return Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Evento Nuevo',
+                        style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 20.0),
+                      TextField(
+                        controller: descripcionController,
+                        decoration: InputDecoration(
+                          labelText: "Descripción del Evento",
+                          prefixIcon: Icon(Icons.description_outlined),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20.0),
+                      TextField(
+                        controller: fechaInicial,
+                        onTap: () => _selectDate(context),
+                        decoration: InputDecoration(
+                          labelText: "Fecha Inicial (dd/mm/aa):",
+                          prefixIcon: Icon(Icons.date_range),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20.0),
+                      Text('Tipo de Evento:',style: TextStyle(fontSize: 18),),
+                      SizedBox(height: 10.0),
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15.0),
+                          border: Border.all(
+                            color: Colors.grey,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: DropdownButton<String>(
+                          value: tipoEventoSeleccionado,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              tipoEventoSeleccionado = newValue!;
+                            });
+                          },
+                          items: <String>['Boda', 'Bautizo', 'Cumpleaños', 'Baby-Shower', 'Peda']
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                  value,
+                                  style: TextStyle(fontSize: 16.0),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          icon: Icon(Icons.arrow_drop_down),
+                          isExpanded: true,
+                          elevation: 2,
+                          style: TextStyle(color: Colors.black87),
+                          underline: Container(
+                            height: 10,
+                            color: Colors.transparent,
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: 20.0),
+                      TextField(
+                        controller: fechaFinal,
+                        onTap: () => _selectDate2(context),
+                        decoration: InputDecoration(
+                          labelText: "Fecha final (dd/mm/aa):",
+                          prefixIcon: Icon(Icons.date_range),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Permitir agregar fotos después de la fecha inicial'),
+                          Switch(
+                            value: permitirAgregarFotos,
+                            onChanged: (bool value) {
+                              setState(() {
+                                permitirAgregarFotos = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16.0),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+
+                             },
+                            child: Text('Crear'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              _abrirGaleria();
+                             },
+                            child: Text('Añadir Foto'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+
+
+          }
+          return Center(child: CircularProgressIndicator(),);
+        }
+    );
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime picked = (await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    ))!;
+
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        fechaInicial.text = "${picked.day}/${picked.month}/${picked.year}";
+      });
+    }
+  }
+
+  Future<void> _selectDate2(BuildContext context) async {
+    final DateTime picked = (await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    ))!;
+
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        fechaFinal.text = "${picked.day}/${picked.month}/${picked.year}";
+      });
+    }
+  }
+
   String convertirTimestampAFecha(Timestamp timestamp) {
 
     DateTime dateTime = timestamp.toDate();
@@ -370,11 +580,28 @@ class _buscareventoState extends State<buscarevento> {
     return fechaFormateada;
   }
 
+  String _formatFechaConsulta(dynamic timestamp) {
+    if (timestamp is Timestamp) {
+      DateTime dateTime = timestamp.toDate();
+      String formattedDate = "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+      return formattedDate;
+    }
+    return "Fecha no válida";
+  }
+
   void copiarAlPortapapeles(String texto) {
     Clipboard.setData(ClipboardData(text: texto));
   }
 
+  Future<void> _abrirGaleria() async {
+    final picker = ImagePicker();
+    final XFile? imagen = await picker.pickImage(source: ImageSource.gallery);
 
+    if (imagen != null) {
+
+      print("Ruta de la imagen seleccionada: ${imagen.path}");
+    }
+  }
 
 
   ///////////////future/////////////////////
