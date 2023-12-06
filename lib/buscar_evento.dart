@@ -6,6 +6,9 @@ import 'package:video2u3/login.dart';
 import 'package:video2u3/serviciosremotos.dart';
 import 'package:image_picker/image_picker.dart';
 
+import 'dart:io';
+
+
 class buscarevento extends StatefulWidget {
   final Map<String, dynamic> datos;
   const buscarevento({Key? key, required this.datos}) : super(key: key);
@@ -22,6 +25,8 @@ class _buscareventoState extends State<buscarevento> {
   String nombre="";
   String descripcion="";
   String titulo= "Mis Eventos";
+  String? idImagen = "";
+
   final eventid = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -29,8 +34,25 @@ class _buscareventoState extends State<buscarevento> {
   final fechaInicial = TextEditingController();
   final fechaFinal = TextEditingController();
   DateTime selectedDate = DateTime.now();
+  DateTime selectedDate2 = DateTime.now();
   bool permitirAgregarFotos = false;
   String tipoEventoSeleccionado = "Boda"; // Puedes inicializarlo con el primer tipo de evento
+
+
+  void onDateSelected(DateTime date) {
+    setState(() {
+      selectedDate = date;
+      fechaInicial.text = date.toString();
+    });
+  }
+
+  void onDateSelected2(DateTime date) {
+    setState(() {
+      selectedDate2 = date;
+      fechaFinal.text = date.toString();
+    });
+  }
+
 
   Widget build(BuildContext context) {
 
@@ -497,7 +519,7 @@ class _buscareventoState extends State<buscarevento> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Permitir agregar fotos después de la fecha inicial'),
+                          Text('Permitir agregar fotos después\n de la fecha Final'),
                           Switch(
                             value: permitirAgregarFotos,
                             onChanged: (bool value) {
@@ -514,13 +536,27 @@ class _buscareventoState extends State<buscarevento> {
                         children: [
                           ElevatedButton(
                             onPressed: () {
-
+                              Timestamp f1 = Timestamp.fromMillisecondsSinceEpoch(selectedDate!.millisecondsSinceEpoch);
+                              Timestamp f2 = Timestamp.fromMillisecondsSinceEpoch(selectedDate2!.millisecondsSinceEpoch);
+                              var datos = {
+                                'admin':widget.datos['id'],
+                                'agreDeFecha':permitirAgregarFotos,
+                                'descripcion':descripcionController.text,
+                                'estado': true,
+                                'fechaF':f2,
+                                'fechaI':f1,
+                                'imagen': idImagen,
+                                'tipoEvento': tipoEventoSeleccionado,
+                                'invitados':[
+                                ],
+                              };
+                              DB.agregarEvento(datos);
                              },
                             child: Text('Crear'),
                           ),
                           ElevatedButton(
-                            onPressed: () {
-                              _abrirGaleria();
+                            onPressed: () async {
+                              idImagen = await _abrirGaleria();;
                              },
                             child: Text('Añadir Foto'),
                           ),
@@ -558,14 +594,14 @@ class _buscareventoState extends State<buscarevento> {
   Future<void> _selectDate2(BuildContext context) async {
     final DateTime picked = (await showDatePicker(
       context: context,
-      initialDate: selectedDate ?? DateTime.now(),
+      initialDate: selectedDate2 ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     ))!;
 
-    if (picked != null && picked != selectedDate) {
+    if (picked != null && picked != selectedDate2) {
       setState(() {
-        selectedDate = picked;
+        selectedDate2 = picked;
         fechaFinal.text = "${picked.day}/${picked.month}/${picked.year}";
       });
     }
@@ -593,14 +629,24 @@ class _buscareventoState extends State<buscarevento> {
     Clipboard.setData(ClipboardData(text: texto));
   }
 
-  Future<void> _abrirGaleria() async {
+   Future<String?> _abrirGaleria() async {
+
     final picker = ImagePicker();
+    String? url = "";
     final XFile? imagen = await picker.pickImage(source: ImageSource.gallery);
 
     if (imagen != null) {
+      url = await DB.subirArchivo(
+          imagen.path, imagen.name);
 
-      print("Ruta de la imagen seleccionada: ${imagen.path}");
+      if (url != null) {
+        print("Imagen subida exitosamente. URL: $url");
+      } else {
+        print("Error al subir la imagen.");
+      }
     }
+    print(" url2: $url");
+    return  url;
   }
 
 

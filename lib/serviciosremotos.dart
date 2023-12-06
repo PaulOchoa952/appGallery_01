@@ -11,6 +11,10 @@ class DB{
     return await baseRemota.collection("user").add(user);
   }
 
+  static Future agregarEvento(Map<String,dynamic> datos) async{
+    return await baseRemota.collection("evento").add(datos);
+  }
+
   static Future<List<Map<String, dynamic>>> MisEventos(String id) async {
     List<Map<String, dynamic>> temp = [];
     var query = await baseRemota.collection("evento").where('admin', isEqualTo: id).get();
@@ -122,6 +126,20 @@ class DB{
     }
   }
 
+
+
+  static Future<String?> subirArchivo(String path, String nombreImagen) async {
+    var file = File(path);
+    var referenciaRemota = carpetaRemota.ref("caratula/$nombreImagen");
+    try {
+      await referenciaRemota.putFile(file);
+      var url = await referenciaRemota.getDownloadURL();
+      return url;
+    } catch (error) {
+      print("Error al subir el archivo: $error");
+      return null;
+    }
+  }
 
 /*
   static Future<String?> subirArchivo(String path, String id, String nombreImagen) async {
