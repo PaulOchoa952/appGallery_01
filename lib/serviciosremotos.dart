@@ -154,4 +154,50 @@ class DB{
       return null;
     }
   }*/
+
+  static Future<String> buscarAdminEvento(String id) async{
+    var query = await baseRemota.collection("user").where(FieldPath.documentId, isEqualTo: id).get();
+    if (query.docs.isNotEmpty) {
+      var datos = query.docs.first.data();
+      return datos["nombre"];
+    } else {
+      return "Usuario no encontrado";
+    }
+  }
+
+  static Future<ListResult> mostrarAlbum(String idEvento) async{
+    return await carpetaRemota.ref(idEvento).listAll();
+  }
+
+  static Future<String> obtenerURLimagen(String nombre, String idEvento) async{
+    return await carpetaRemota.ref("$idEvento/$nombre").getDownloadURL();
+  }
+
+  static Future<String?> subirImagenAlbum(String path, String nombreImagen, String idEvento) async {
+    var file = File(path);
+    var referenciaRemota = carpetaRemota.ref("$idEvento/$nombreImagen");
+    try {
+      await referenciaRemota.putFile(file);
+      var url = await referenciaRemota.getDownloadURL();
+      return url;
+    } catch (error) {
+      print("Error al subir el archivo: $error");
+      return null;
+    }
+  }
+
+  static Future<void> eliminarImagenAlbum(String nombre, String idEvento) async{
+    var referenciaRemota = carpetaRemota.ref("$idEvento/$nombre");
+    try {
+      await referenciaRemota.delete();
+    } catch (error) {
+      print("Error al eliminar el archivo: $error");
+    }
+  }
+
+  static Future<String> obtenerNombre(String url) async{
+    var referenciaRemota = carpetaRemota.refFromURL(url);
+    return referenciaRemota.name;
+  }
+
 }

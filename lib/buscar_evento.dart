@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:video2u3/album_evento.dart';
 import 'package:video2u3/login.dart';
 import 'package:video2u3/serviciosremotos.dart';
 import 'package:image_picker/image_picker.dart';
@@ -205,7 +206,7 @@ class _buscareventoState extends State<buscarevento> {
         TextField(
           controller: eventid,
           decoration: InputDecoration(
-            labelText: "numero invitacion"
+              labelText: "numero invitacion"
           ),
         ),
         SizedBox(height: 10,),
@@ -238,7 +239,10 @@ class _buscareventoState extends State<buscarevento> {
                 itemBuilder: (context, indice){
                   return InkWell(
                     onTap: () {
-                      
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AlbumEvento(datos: listaJSON.data?[indice], usuario: widget.datos["id"],)),
+                      );
                     },
                     child: Card(
                         shape: RoundedRectangleBorder(
@@ -315,10 +319,10 @@ class _buscareventoState extends State<buscarevento> {
                               Container(
                                   padding: EdgeInsets.all(10),
                                   child: ListTile(
-                                      contentPadding:
-                                      EdgeInsets.fromLTRB(15, 10, 25, 0),
-                                      title: Text('${listaJSON.data?[indice]['descipcion']} ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), ),
-                                      subtitle: Text( "Fecha Finalizacion: ${convertirTimestampAFecha(listaJSON.data?[indice]['fechaF'])}"),
+                                    contentPadding:
+                                    EdgeInsets.fromLTRB(15, 10, 25, 0),
+                                    title: Text('${listaJSON.data?[indice]['descipcion']} ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), ),
+                                    subtitle: Text( "Fecha Finalizacion: ${convertirTimestampAFecha(listaJSON.data?[indice]['fechaF'])}"),
 
                                   )),
                             ],
@@ -343,7 +347,10 @@ class _buscareventoState extends State<buscarevento> {
                 itemBuilder: (context, indice){
                   return InkWell(
                     onTap: () {
-
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AlbumEvento(datos: listaJSON.data?[indice], usuario: widget.datos["id"],)),
+                      );
                     },
                     child: Card(
                         shape: RoundedRectangleBorder(
@@ -551,13 +558,13 @@ class _buscareventoState extends State<buscarevento> {
                                 ],
                               };
                               DB.agregarEvento(datos);
-                             },
+                            },
                             child: Text('Crear'),
                           ),
                           ElevatedButton(
                             onPressed: () async {
-                              idImagen = await _abrirGaleria();;
-                             },
+                              idImagen = await _abrirGaleria();
+                            },
                             child: Text('Añadir Foto'),
                           ),
                         ],
@@ -629,7 +636,7 @@ class _buscareventoState extends State<buscarevento> {
     Clipboard.setData(ClipboardData(text: texto));
   }
 
-   Future<String?> _abrirGaleria() async {
+  Future<String?> _abrirGaleria() async {
 
     final picker = ImagePicker();
     String? url = "";
