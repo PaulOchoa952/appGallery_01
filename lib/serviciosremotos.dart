@@ -6,18 +6,19 @@ var carpetaRemota = FirebaseStorage.instance;
 
 var baseRemota = FirebaseFirestore.instance;
 
-class DB{
-  static Future insertar(Map<String,dynamic> user) async{
+class DB {
+  static Future insertar(Map<String, dynamic> user) async {
     return await baseRemota.collection("user").add(user);
   }
 
-  static Future agregarEvento(Map<String,dynamic> datos) async{
+  static Future agregarEvento(Map<String, dynamic> datos) async {
     return await baseRemota.collection("evento").add(datos);
   }
 
   static Future<List<Map<String, dynamic>>> MisEventos(String id) async {
     List<Map<String, dynamic>> temp = [];
-    var query = await baseRemota.collection("evento").where('admin', isEqualTo: id).get();
+    var query = await baseRemota.collection("evento").where(
+        'admin', isEqualTo: id).get();
 
     query.docs.forEach((element) {
       Map<String, dynamic> datos = element.data();
@@ -54,7 +55,8 @@ class DB{
       }
 
       futures.add(
-          baseRemota.collection("user").doc(datos['admin']).get().then((adminSnapshot) {
+          baseRemota.collection("user").doc(datos['admin']).get().then((
+              adminSnapshot) {
             var adminData = adminSnapshot.data();
             if (adminData != null) {
               datos.addAll({'nombreAdmin': adminData['nombre']});
@@ -70,7 +72,7 @@ class DB{
   }
 
 
-  static Future<Map<String,dynamic>> buscarUidLogin(String uid) async{
+  static Future<Map<String, dynamic>> buscarUidLogin(String uid) async {
     try {
       CollectionReference collection = baseRemota.collection('user');
       var query = await collection.where('uidUser', isEqualTo: uid).get();
@@ -78,7 +80,7 @@ class DB{
         var doc = query.docs.first;
         Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
         datos.addAll({
-          'id':doc.id
+          'id': doc.id
         });
         return datos;
       } else {
@@ -92,14 +94,18 @@ class DB{
   }
 
 
-  static Future<Map<String, dynamic>?> buscarEventoPorId(String idEvento) async {
+  static Future<Map<String, dynamic>?> buscarEventoPorId(
+      String idEvento) async {
     try {
       var evento = await baseRemota.collection("evento").doc(idEvento).get();
       if (evento.exists) {
-        Map<String, dynamic> datosEvento = evento.data() as Map<String, dynamic>;
-        var admin= await baseRemota.collection("user").doc(datosEvento['admin']).get();
+        Map<String, dynamic> datosEvento = evento.data() as Map<String,
+            dynamic>;
+        var admin = await baseRemota.collection("user").doc(
+            datosEvento['admin']).get();
         if (admin.exists) {
-          Map<String, dynamic> datosAdmin = admin.data() as Map<String, dynamic>;
+          Map<String, dynamic> datosAdmin = admin.data() as Map<String,
+              dynamic>;
 
           datosEvento.addAll({'nombreAdmin': datosAdmin['nombre']});
         }
@@ -117,7 +123,8 @@ class DB{
   }
 
 
-  static Future<void> agregarInvitado(String idEvento, String idInvitado) async {
+  static Future<void> agregarInvitado(String idEvento,
+      String idInvitado) async {
     try {
       var evento = baseRemota.collection("evento").doc(idEvento);
 
@@ -140,7 +147,6 @@ class DB{
       print("Error al agregar invitado: $e");
     }
   }
-
 
 
   static Future<String?> subirArchivo(String path, String nombreImagen) async {
@@ -170,8 +176,9 @@ class DB{
     }
   }*/
 
-  static Future<String> buscarAdminEvento(String id) async{
-    var query = await baseRemota.collection("user").where(FieldPath.documentId, isEqualTo: id).get();
+  static Future<String> buscarAdminEvento(String id) async {
+    var query = await baseRemota.collection("user").where(
+        FieldPath.documentId, isEqualTo: id).get();
     if (query.docs.isNotEmpty) {
       var datos = query.docs.first.data();
       return datos["nombre"];
@@ -180,15 +187,16 @@ class DB{
     }
   }
 
-  static Future<ListResult> mostrarAlbum(String idEvento) async{
+  static Future<ListResult> mostrarAlbum(String idEvento) async {
     return await carpetaRemota.ref(idEvento).listAll();
   }
 
-  static Future<String> obtenerURLimagen(String nombre, String idEvento) async{
+  static Future<String> obtenerURLimagen(String nombre, String idEvento) async {
     return await carpetaRemota.ref("$idEvento/$nombre").getDownloadURL();
   }
 
-  static Future<String?> subirImagenAlbum(String path, String nombreImagen, String idEvento) async {
+  static Future<String?> subirImagenAlbum(String path, String nombreImagen,
+      String idEvento) async {
     var file = File(path);
     var referenciaRemota = carpetaRemota.ref("$idEvento/$nombreImagen");
     try {
@@ -201,7 +209,8 @@ class DB{
     }
   }
 
-  static Future<void> eliminarImagenAlbum(String nombre, String idEvento) async{
+  static Future<void> eliminarImagenAlbum(String nombre,
+      String idEvento) async {
     var referenciaRemota = carpetaRemota.ref("$idEvento/$nombre");
     try {
       await referenciaRemota.delete();
@@ -210,16 +219,16 @@ class DB{
     }
   }
 
-  static Future<String> obtenerNombre(String url) async{
+  static Future<String> obtenerNombre(String url) async {
     var referenciaRemota = carpetaRemota.refFromURL(url);
     return referenciaRemota.name;
   }
 
-  static Future<int> actualizarEstadoDocumento(String idEvento, bool nuevoEstado) async {
-
-
+  static Future<int> actualizarEstadoDocumento(String idEvento,
+      bool nuevoEstado) async {
     try {
-      DocumentSnapshot documento = await baseRemota.collection("evento").doc(idEvento).get();
+      DocumentSnapshot documento = await baseRemota.collection("evento").doc(
+          idEvento).get();
 
       if (documento.exists) {
         await baseRemota.collection("evento").doc(idEvento).update({
@@ -231,6 +240,28 @@ class DB{
       }
     } catch (e) {
       return 1; // Error general
+    }
+  }
+
+  static Future <void> actualizarImagenUsuario(String userId, String newImageUrl) async {
+    try {
+      await baseRemota.collection("user").doc(userId).update({
+        'img': newImageUrl,
+      });
+      print("Imagen de usuario actualizada con éxito.");
+    } catch (error) {
+      print("Error al actualizar la imagen del usuario: $error");
+    }
+  }
+
+  static Future <void> actualizarNombreUsuario(String userId,String nuevoNombre) async{
+    try {
+      await baseRemota.collection("user").doc(userId).update({
+        'nombre':nuevoNombre,
+      });
+      print("Nombre de usuario actualizada con éxito.");
+    } catch (error) {
+      print("Error al actualizar la Nombre del usuario: $error");
     }
   }
 

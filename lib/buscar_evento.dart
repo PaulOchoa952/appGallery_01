@@ -34,6 +34,7 @@ class _buscareventoState extends State<buscarevento> {
   TextEditingController descripcionController = TextEditingController();
   final fechaInicial = TextEditingController();
   final fechaFinal = TextEditingController();
+  final nombreNuevo=TextEditingController();
   DateTime selectedDate = DateTime.now();
   DateTime selectedDate2 = DateTime.now();
   bool permitirAgregarFotos = false;
@@ -63,7 +64,6 @@ class _buscareventoState extends State<buscarevento> {
         centerTitle: true,
         actions: _botonMagico(),
       ),
-
       body: dinamico(),
       drawer: Drawer(
         child: ListView(
@@ -89,7 +89,8 @@ class _buscareventoState extends State<buscarevento> {
             _item(Icons.cake,"Mis Eventos",0),
             _item(Icons.search,"Buscar evento",1),
             _item(Icons.event,"Invitaciones",2),
-            _item(Icons.logout, "Salir", 3)
+            _item(Icons.logout, "Salir", 3),
+            _item(Icons.add_a_photo,"Configuracion",4)
           ],
         ),
       ),
@@ -124,25 +125,35 @@ class _buscareventoState extends State<buscarevento> {
                 setState(() {
                   titulo = "Mis Eventos";
                 });
+                break;
               }
             case 1 :
               {
                 setState(() {
                   titulo = "Buscar Evento";
                 });
+                break;
               }
             case 2 :
               {
                 setState(() {
                   titulo = "Invitaciones";
                 });
+                break;
               }
             case 3 :
               {
                 setState(() {
                   titulo = "Crear Evento";
                 });
+                break;
               }
+            case 4:{
+              setState(() {
+                titulo= "Configuracion";
+              });
+              break;
+            }
           }
         });
         // Handle the logout action
@@ -153,7 +164,10 @@ class _buscareventoState extends State<buscarevento> {
         }
       },
       title: Row(
-        children: [Expanded(child: Icon(icono)), Expanded(child: Text(texto),flex: 2,)],
+        children: [Expanded(child: Icon(icono)),
+          Expanded(child: Text(texto),flex: 2,)
+        ],
+
       ),
     );
   }
@@ -176,6 +190,9 @@ class _buscareventoState extends State<buscarevento> {
       case 3 : {
         return crearEvento();
       }
+      case 4:{
+        return agregarFoto();
+      }
     }
     return BuscarEvento();
   }
@@ -196,8 +213,43 @@ class _buscareventoState extends State<buscarevento> {
     }
   }
 
-  Widget BuscarEvento(){
+  Widget agregarFoto(){
+    return ListView(
+      padding: EdgeInsets.all(40),
+      children: [
+        Text("Cambiar foto",style: TextStyle(fontSize: 30,),textAlign:TextAlign.center,),
+        SizedBox(height: 10,),
+        ElevatedButton(onPressed: () async {
+           bool success= await _updateProfilePicture();
+           if(success){
+             _showSuccessMessage("Foto de perfil actualizada con exito");
+           }
+        }, child: const Text("Cambiar foto")),
+        SizedBox(height: 30,),
+        Text("Cambiar nombre",style: TextStyle(fontSize: 30,),textAlign:TextAlign.center,),
+        SizedBox(height: 20,),
+        TextField(
+          controller: nombreNuevo,
+          decoration: InputDecoration(
+            labelText: "Nombre",
+            border: OutlineInputBorder()
+          ),
+        ),
+        SizedBox(height: 20,),
+        FilledButton(onPressed: () async {
+         bool success= await _updateProfileName(nombreNuevo.text);
+         if(success){
+           setState(() {
+             nombreNuevo.text="";
+           });
+           _showSuccessMessage("Nombre de perfil actualizada con exito");
+         }
+        }, child: const Text("Cambiar nombre"))
+      ],
+    );
+  }
 
+  Widget BuscarEvento(){
     return ListView(
       padding: EdgeInsets.all(40),
       children: [
@@ -671,6 +723,51 @@ class _buscareventoState extends State<buscarevento> {
     } else {
       // Manejar el caso en el que el evento no se encuentre
     }
+  }
+  ///method to update profile picture
+  Future <bool> _updateProfilePicture() async {
+    String? newImageUrl = await _abrirGaleria();
+    if (newImageUrl != null) {
+    try{
+      await DB.actualizarImagenUsuario(widget.datos['id'], newImageUrl);
+        // Assuming you have a state variable to store the user's image URL
+        setState(() {
+          widget.datos['img'] = newImageUrl;
+        });
+      return true;
+    } catch (e){
+      print("Error al actualizar el nombre: $e");
+    }
+  }
+    return false;
+  }
+
+
+
+
+
+  Future <bool> _updateProfileName(String text) async {
+    if (text != null){
+      try{
+        await DB.actualizarNombreUsuario(widget.datos['id'],text);
+        setState(() {
+          widget.datos['nombre']=text;
+        });
+        return true;
+      }catch (e){
+        print("Error al actualizar el nombre: $e");
+      }
+    }
+    return false;
+  }
+
+  void _showSuccessMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: Duration(seconds: 5),
+      ),
+    );
   }
 
 }
