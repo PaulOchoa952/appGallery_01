@@ -21,12 +21,14 @@ class _AlbumEventoState extends State<AlbumEvento> {
   bool loading = false;
   List imagenes = [];
   bool fecha = false;
+  bool fechapaso=false;
 
   @override
   void initState() {
     // TODO: implement initState
     buscarAdmin();
     idEvento = widget.datos["id"];
+    fecha = !widget.datos["estado"];
     loading = false;
     cargarURL();
     if(widget.datos["admin"] == widget.usuario){
@@ -60,6 +62,7 @@ class _AlbumEventoState extends State<AlbumEvento> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Album del Evento"),
@@ -144,9 +147,17 @@ class _AlbumEventoState extends State<AlbumEvento> {
                           SizedBox(height: 20,),
                           Switch(
                             value: fecha,
-                            onChanged: (bool value) {
-                              setState(() {
-                                fecha = value;
+                            onChanged: (bool value) async {
+                              print("valor del switch a $value");
+                              print(widget.datos["id"]);
+                              print(!widget.datos["estado"]);
+                              await DB.actualizarEstadoDocumento(idEvento, !value).then((valuer){
+                                print(valuer);
+                                if(valuer == 0){
+                                  setState(() {
+                                    fecha = value;
+                                  });
+                                }
                               });
                             },
                           ),
@@ -162,23 +173,30 @@ class _AlbumEventoState extends State<AlbumEvento> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async{
-          final archivoAEnviar = await FilePicker.platform.pickFiles(
-              allowMultiple: false,
-              type: FileType.custom,
-              allowedExtensions: ["png", "jpg", "jpeg"]
-          );
-          if(archivoAEnviar==null){
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No se selecciono ninguna imagen"), duration: Duration(seconds: 1),));
-            return;
+
+          if(!fecha){
+            final archivoAEnviar = await FilePicker.platform.pickFiles(
+                allowMultiple: false,
+                type: FileType.custom,
+                allowedExtensions: ["png", "jpg", "jpeg"]
+            );
+            if(archivoAEnviar==null){
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No se selecciono ninguna imagen"), duration: Duration(seconds: 1),));
+              return;
+            }
+
+            var path = archivoAEnviar.files.single.path!!;
+            var nombre = archivoAEnviar.files.single.name!!;
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Subiendo Imagen"), duration: Duration(seconds: 1),));
+
+            DB.subirImagenAlbum(path, nombre, idEvento).then((value) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Imagen subida satisfactoriamente"), duration: Duration(seconds: 1),));
+            });
+
+          }else{
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Album cerrado o fecha pasada"), duration: Duration(seconds: 1),));
           }
 
-          var path = archivoAEnviar.files.single.path!!;
-          var nombre = archivoAEnviar.files.single.name!!;
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Subiendo Imagen"), duration: Duration(seconds: 1),));
-
-          DB.subirImagenAlbum(path, nombre, idEvento).then((value) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Imagen subida satisfactoriamente"), duration: Duration(seconds: 1),));
-          });
         },
         child: Icon(Icons.upload),
       ),

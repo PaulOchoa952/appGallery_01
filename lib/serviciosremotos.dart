@@ -31,13 +31,28 @@ class DB{
   static Future<List<Map<String, dynamic>>> invitaciones(String id) async {
     List<Map<String, dynamic>> temp = [];
 
-    var query = await baseRemota.collection("evento").where('invitados', arrayContains: id).get();
+    var fechaActual = DateTime.now();
+
+    var query = await baseRemota.collection("evento")
+        .where('invitados', arrayContains: id)
+        .where('estado', isEqualTo: true)
+        .get();
 
     List<Future<void>> futures = [];
 
     for (var document in query.docs) {
       Map<String, dynamic> datos = document.data();
       datos.addAll({'id': document.id});
+
+      // Verificar si 'agreDeFecha' es falso y si la fecha de fin no ha pasado
+      bool agreDeFecha = datos['agreDeFecha'] ?? false;
+      if (!agreDeFecha) {
+        DateTime fechaFin = (datos['fechaF'] as Timestamp).toDate();
+        if (fechaFin.isBefore(fechaActual)) {
+          continue; // Saltar este evento si la fecha de fin ya ha pasado
+        }
+      }
+
       futures.add(
           baseRemota.collection("user").doc(datos['admin']).get().then((adminSnapshot) {
             var adminData = adminSnapshot.data();
@@ -198,6 +213,25 @@ class DB{
   static Future<String> obtenerNombre(String url) async{
     var referenciaRemota = carpetaRemota.refFromURL(url);
     return referenciaRemota.name;
+  }
+
+  static Future<int> actualizarEstadoDocumento(String idEvento, bool nuevoEstado) async {
+
+
+    try {
+      DocumentSnapshot documento = await baseRemota.collection("evento").doc(idEvento).get();
+
+      if (documento.exists) {
+        await baseRemota.collection("evento").doc(idEvento).update({
+          'estado': nuevoEstado,
+        });
+        return 0; // Éxito
+      } else {
+        return 1; // Error: No se encontró el documento
+      }
+    } catch (e) {
+      return 1; // Error general
+    }
   }
 
 }

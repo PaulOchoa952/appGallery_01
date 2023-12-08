@@ -548,7 +548,7 @@ class _buscareventoState extends State<buscarevento> {
                               var datos = {
                                 'admin':widget.datos['id'],
                                 'agreDeFecha':permitirAgregarFotos,
-                                'descripcion':descripcionController.text,
+                                'descipcion':descripcionController.text,
                                 'estado': true,
                                 'fechaF':f2,
                                 'fechaI':f1,
