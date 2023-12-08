@@ -73,13 +73,19 @@ class _buscareventoState extends State<buscarevento> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
-                    backgroundColor: Colors.white,
-                    radius: 40,
-                    child: ClipOval(
+                  backgroundColor: Colors.white,
+                  radius: 40,
+                  child: ClipOval(
+                    child: Container(
+                      width: 2 * 40,
+                      height: 2 * 40,
                       child: Image.network(
-                          widget.datos['img']
+                        widget.datos['img'],
+                        fit: BoxFit.cover,
                       ),
-                    )),
+                    ),
+                  ),
+                ),
                 SizedBox(height: 20,),
                 Text("${widget.datos['nombre']}",style: TextStyle(color:Colors.white,fontSize: 20),)
               ],
