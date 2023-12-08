@@ -18,8 +18,6 @@ class _AlbumEventoState extends State<AlbumEvento> {
   String name = "";
   String idEvento = "";
   bool admin = false;
-  bool loading = false;
-  List imagenes = [];
   bool fecha = false;
   bool fechapaso=false;
 
@@ -29,27 +27,12 @@ class _AlbumEventoState extends State<AlbumEvento> {
     buscarAdmin();
     idEvento = widget.datos["id"];
     fecha = !widget.datos["estado"];
-    loading = false;
-    cargarURL();
     if(widget.datos["admin"] == widget.usuario){
       setState(() {
         admin = true;
       });
     }
     super.initState();
-  }
-
-  void cargarURL() async{
-    var temp = await DB.mostrarAlbum(idEvento);
-    temp.items.forEach((element) async{
-      String url = await DB.obtenerURLimagen(element.name, idEvento);
-      setState(() {
-        imagenes.add(url);
-      });
-    });
-    setState(() {
-      loading = true;
-    });
   }
 
   void buscarAdmin() async{
@@ -83,36 +66,38 @@ class _AlbumEventoState extends State<AlbumEvento> {
                         future: DB.mostrarAlbum(idEvento),
                         builder: (context, img) {
                           if(img.hasData){
-                            return GestureDetector(
-                              onTap: () async{
-                                await Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => Galeria(idEvento: idEvento, admin: admin)
-                                ));
-                                setState(() {
-                                  imagenes = imagenes;
-                                });
-                              },
-                              child: CarouselSlider.builder(
-                                  options: CarouselOptions(
-                                    height: 250,
-                                    viewportFraction: 1,
-                                    enableInfiniteScroll: true,
-                                    autoPlay: true,
-                                    autoPlayInterval: Duration(seconds: 3),
-                                    autoPlayAnimationDuration: Duration(milliseconds: 800),
-                                    autoPlayCurve: Curves.fastOutSlowIn,
-                                    enlargeCenterPage: true,
-                                    scrollDirection: Axis.horizontal,
-                                  ),
-                                  itemCount: img.data!.items.length,
-                                  itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex){
-                                    if(loading){
+                            if(img.data!.items.length == 0){
+                              return Container(
+                                height: 250,
+                                child: Center(child: Text("NO HAY IMAGENES\n\nEN EL ALBUM", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center,))
+                              );
+                            } else {
+                              return GestureDetector(
+                                onTap: () async{
+                                  await Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => Galeria(idEvento: idEvento, admin: admin)
+                                  ));
+                                  setState(() {});
+                                },
+                                child: CarouselSlider.builder(
+                                    options: CarouselOptions(
+                                      height: 250,
+                                      viewportFraction: 1,
+                                      enableInfiniteScroll: true,
+                                      autoPlay: true,
+                                      autoPlayInterval: Duration(seconds: 3),
+                                      autoPlayAnimationDuration: Duration(milliseconds: 800),
+                                      autoPlayCurve: Curves.fastOutSlowIn,
+                                      enlargeCenterPage: true,
+                                      scrollDirection: Axis.horizontal,
+                                    ),
+                                    itemCount: img.data!.items.length,
+                                    itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex){
                                       return FutureBuilder(
                                           future: DB.obtenerURLimagen(img.data!.items[itemIndex].name, idEvento),
                                           builder: (context, url) {
                                             if(url.hasData){
                                               return Container(
-
                                                 child: Image.network(url.data!, fit: BoxFit.cover, width: double.infinity, height: 200, ),
                                               );
                                             }
@@ -120,10 +105,9 @@ class _AlbumEventoState extends State<AlbumEvento> {
                                           }
                                       );
                                     }
-                                    return Center(child: CircularProgressIndicator(),);
-                                  }
-                              ),
-                            );
+                                ),
+                              );
+                            }
                           }else{
                             return Center(child: CircularProgressIndicator(),);
                           }
@@ -189,7 +173,8 @@ class _AlbumEventoState extends State<AlbumEvento> {
             var nombre = archivoAEnviar.files.single.name!!;
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Subiendo Imagen"), duration: Duration(seconds: 1),));
 
-            DB.subirImagenAlbum(path, nombre, idEvento).then((value) {
+            DB.subirImagenAlbum(path, nombre, idEvento).then((value){
+              setState(() {});
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Imagen subida satisfactoriamente"), duration: Duration(seconds: 1),));
             });
 
@@ -205,8 +190,9 @@ class _AlbumEventoState extends State<AlbumEvento> {
 
 }
 
-
+/////////////////////////////////////////////////////////
 // Pantalla donde se muestra todas las imagenes
+
 class Galeria extends StatefulWidget {
   String idEvento;
   bool admin;
@@ -355,10 +341,20 @@ class _ImagenesPaginaState extends State<ImagenesPagina> {
                                   String nombre = await DB.obtenerNombre(widget.imagenes[_indice]);
                                   DB.eliminarImagenAlbum(nombre, widget.idEvento).then((value) {
                                     Navigator.pop(context);
-                                    setState(() {
-                                      widget.imagenes.removeAt(_indice);
-                                    });
+                                    if(widget.imagenes.length == _indice+1){
+                                      setState(() {
+                                        widget.imagenes.removeAt(_indice);
+                                      });
+                                      _indice = _indice-1;
+                                    }else{
+                                      setState(() {
+                                        widget.imagenes.removeAt(_indice);
+                                      });
+                                    }
                                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Imagen eliminada satisfactoriamente"), duration: Duration(seconds: 1),));
+                                    if(widget.imagenes.length == 0){
+                                      Navigator.pop(context);
+                                    }
                                   });
                                 },
                                 child: Text("Aceptar")
@@ -367,7 +363,6 @@ class _ImagenesPaginaState extends State<ImagenesPagina> {
                         );
                       },
                     );
-
                   },
                   icon: Icon(Icons.delete_outline, color: Colors.white,)
               ),
