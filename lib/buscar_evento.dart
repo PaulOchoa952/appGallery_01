@@ -374,10 +374,10 @@ class _buscareventoState extends State<buscarevento> {
           ),
           SizedBox(height: 20,),
           Text("Tipo Evento: ${evento}",
-            style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            )
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              )
           ),
           SizedBox(height: 10,),
           Text("Propiedad de: ${nombre}",
@@ -388,10 +388,10 @@ class _buscareventoState extends State<buscarevento> {
           ),
           SizedBox(height: 10,),
           Text("Descripcion: ${descripcion}",
-            style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-          )
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              )
           ),
           SizedBox(height: 20,),
           ElevatedButton(
@@ -421,7 +421,6 @@ class _buscareventoState extends State<buscarevento> {
       ),
     );
   }
-
 
   Widget _buildInfoText(String label, String value) {
     return Column(
@@ -537,7 +536,10 @@ class _buscareventoState extends State<buscarevento> {
                                 ],
                               ),
                               Image.network(
-                                  "${listaJSON.data?[indice]['imagen']}"
+                                "${listaJSON.data?[indice]['imagen']}",
+                                width: 400, // ajusta el ancho de la imagen según tus necesidades
+                                height: 150, // ajusta la altura de la imagen según tus necesidades
+                                fit: BoxFit.cover, // ajusta la forma en que la imagen se adapta al espacio disponible
                               ),
                               Container(
                                   padding: EdgeInsets.all(10),
@@ -938,7 +940,7 @@ class _buscareventoState extends State<buscarevento> {
                                 idImagen = imagenesDefecto[1];
                               }
 
-                              if(!subirPrimeraFoto && tipoEventoSeleccionado == "Cumplaeños"){
+                              if(!subirPrimeraFoto && tipoEventoSeleccionado == "Cumpleaños"){
                                 idImagen = imagenesDefecto[2];
                               }
 
