@@ -29,6 +29,36 @@ class DB {
     return temp;
   }
 
+  static Future<int> eliminarInvitacion(String idEvento, String idUser) async{
+    var query = await baseRemota.collection("evento").doc(idEvento).get();
+    if(query.exists){
+      Map<String, dynamic> datosEvento = query.data() as Map<String, dynamic>;
+      List<dynamic> invitadosDinamicos = datosEvento['invitados'];
+      List<String> invitados = invitadosDinamicos.cast<String>();
+      print(invitados);
+      if(invitados.contains(idUser)){
+        invitados.remove(idUser);
+      }else{
+        return 1;
+      }
+      datosEvento['invitados'] = invitados;
+      await baseRemota.collection("evento").doc(idEvento).update(datosEvento);
+    }
+
+    return 0;
+  }
+
+  static Future<int> eliminarEvento(String idEvento) async{
+    try {
+      await baseRemota.collection("evento").doc(idEvento).delete();
+      return 0;
+    } catch (e) {
+      print("Error al eliminar el evento: $e");
+      return 1;
+    }
+  }
+
+
   static Future<List<Map<String, dynamic>>> invitaciones(String id) async {
     List<Map<String, dynamic>> temp = [];
 

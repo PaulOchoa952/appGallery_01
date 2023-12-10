@@ -321,8 +321,8 @@ class _buscareventoState extends State<buscarevento> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: ListView(
+
         children: [
           Text(
             "Buscar Evento",
@@ -499,10 +499,6 @@ class _buscareventoState extends State<buscarevento> {
                                                   child: Text('Eliminar'),
                                                 ),
                                                 PopupMenuItem<String>(
-                                                  value: '2',
-                                                  child: Text('Actualizar'),
-                                                ),
-                                                PopupMenuItem<String>(
                                                   value: '3',
                                                   child: Text('Copiar Invitacion'),
                                                 ),
@@ -513,7 +509,7 @@ class _buscareventoState extends State<buscarevento> {
                                             onSelected: (String value) {
                                               switch(value){
                                                 case '1': {
-
+                                                    eliminarEvento(listaJSON.data?[indice]['id']);
                                                 }
                                                 case '2': {
 
@@ -602,19 +598,16 @@ class _buscareventoState extends State<buscarevento> {
                                           PopupMenuButton<String>(
                                             itemBuilder: (BuildContext context) {
                                               return [
+
                                                 PopupMenuItem<String>(
                                                   value: '1',
-                                                  child: Text('otra'),
-                                                ),
-                                                PopupMenuItem<String>(
-                                                  value: '2',
-                                                  child: Text('otra2'),
+                                                  child: Text('Eliminar Invitacion'),
                                                 ),
 
                                               ];
                                             },
                                             onSelected: (String value) {
-                                              print('Opción seleccionada: $value');
+                                              eliminarInvitacion(listaJSON.data?[indice]['id']);
                                             },
                                           ),
                                         ],
@@ -643,6 +636,80 @@ class _buscareventoState extends State<buscarevento> {
             );
           }
           return Center(child: CircularProgressIndicator(),);
+        }
+    );
+  }
+
+  void eliminarInvitacion(String idEvento){
+
+    showDialog(
+        context: context,
+        builder: (builder){
+          return AlertDialog(
+            title: Text("Confirmar Eliminacion"),
+            content: Text("Seguro desea eliminar su invitacion a este evento?"),
+            actions: [
+              TextButton(
+                  onPressed: (){
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cancelar")
+              ),
+              TextButton(
+                  onPressed: ()async{
+                    await DB.eliminarInvitacion(idEvento, widget.datos['id']).then((value) {
+                      if(value==0){
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Invitacion Eliminada Correctamente")));
+                        Navigator.pop(context);
+                        setState(() {
+
+                        });
+                      }else{
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al eliminar")));
+                      }
+                    });
+                  },
+                  child: Text("Eliminar")
+              )
+            ],
+          );
+        }
+    );
+  }
+
+  void eliminarEvento(String idEvento){
+
+    showDialog(
+        context: context,
+        builder: (builder){
+          return AlertDialog(
+            title: Text("Confirmar Eliminacion"),
+            content: Text("Seguro desea eliminar este evento?"),
+            actions: [
+              TextButton(
+                  onPressed: (){
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cancelar")
+              ),
+              TextButton(
+                  onPressed: ()async{
+                    await DB.eliminarEvento(idEvento).then((value) {
+                      if(value==0){
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Evento Eliminado Correctamente")));
+                        Navigator.pop(context);
+                        setState(() {
+
+                        });
+                      }else{
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al eliminar")));
+                      }
+                    });
+                  },
+                  child: Text("Eliminar")
+              )
+            ],
+          );
         }
     );
   }
