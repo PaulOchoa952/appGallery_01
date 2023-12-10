@@ -345,6 +345,7 @@ class _buscareventoState extends State<buscarevento> {
             decoration: InputDecoration(
               labelText: "Número de Invitación",
               border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.token_sharp),
             ),
           ),
           SizedBox(height: 20),
@@ -368,11 +369,26 @@ class _buscareventoState extends State<buscarevento> {
             child: const Text("Buscar"),
           ),
           SizedBox(height: 20,),
-          Text("Tipo Evento: ${evento}"),
+          Text("Tipo Evento: ${evento}",
+            style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+            )
+          ),
           SizedBox(height: 10,),
-          Text("Propiedad de: ${nombre}"),
+          Text("Propiedad de: ${nombre}",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              )
+          ),
           SizedBox(height: 10,),
-          Text("Descripcion: ${descripcion}"),
+          Text("Descripcion: ${descripcion}",
+            style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500,
+          )
+          ),
           SizedBox(height: 20,),
           ElevatedButton(
             onPressed: !encontrado || anadiendoInvitado
