@@ -6,7 +6,7 @@ import 'package:video2u3/album_evento.dart';
 import 'package:video2u3/login.dart';
 import 'package:video2u3/serviciosremotos.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:flutter_switch/flutter_switch.dart';
 import 'dart:io';
 
 
@@ -38,22 +38,72 @@ class _buscareventoState extends State<buscarevento> {
   DateTime selectedDate = DateTime.now();
   DateTime selectedDate2 = DateTime.now();
   bool permitirAgregarFotos = false;
-  String tipoEventoSeleccionado = "Boda"; // Puedes inicializarlo con el primer tipo de evento
+  bool subirPrimeraFoto = false;
+  String tipoEventoSeleccionado = "Boda";
+  bool camposCompletos = false;
+  bool anadiendoInvitado = false;
+  bool encontrado = false;
+  bool agregado = false;
 
+  FocusNode _focusNode = FocusNode();
 
-  void onDateSelected(DateTime date) {
-    setState(() {
-      selectedDate = date;
-      fechaInicial.text = date.toString();
-    });
+  List<String?> imagenesDefecto = [
+    'https://firebasestorage.googleapis.com/v0/b/dam-u4-appgallery.appspot.com/o/caratula%2Fboda.jpg?alt=media&token=f3100e91-80cc-41d6-83d9-6d2d2090a18a',
+    'https://firebasestorage.googleapis.com/v0/b/dam-u4-appgallery.appspot.com/o/caratula%2Fbautizo.jpg?alt=media&token=59f8ff87-4bbc-43c8-b5ac-3c6abe9d2235',
+    'https://firebasestorage.googleapis.com/v0/b/dam-u4-appgallery.appspot.com/o/caratula%2Fcumplean%CC%83os.jpg?alt=media&token=01d05b6a-d413-401c-83d6-2a4350d054c4',
+    'https://firebasestorage.googleapis.com/v0/b/dam-u4-appgallery.appspot.com/o/caratula%2Fbaby.jpg?alt=media&token=b890dd18-cb53-426e-9bf8-9137feb1c1e3',
+    'https://firebasestorage.googleapis.com/v0/b/dam-u4-appgallery.appspot.com/o/caratula%2Fpeda.jpg?alt=media&token=59b36a69-c93c-402e-8dfe-318695108acf'
+  ];
+
+  Future<void> _selectDateAndTime(BuildContext context) async {
+    DateTime? date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (date != null) {
+      TimeOfDay? time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (time != null) {
+        DateTime selectedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+        setState(() {
+          selectedDate = selectedDateTime;
+          fechaInicial.text = selectedDate.toString();
+        });
+      }
+    }
   }
 
-  void onDateSelected2(DateTime date) {
-    setState(() {
-      selectedDate2 = date;
-      fechaFinal.text = date.toString();
-    });
+  Future<void> _selectDateAndTime2(BuildContext context) async {
+    DateTime? date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (date != null) {
+      TimeOfDay? time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (time != null) {
+        DateTime selectedDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+        setState(() {
+          selectedDate2 = selectedDateTime;
+          fechaFinal.text = selectedDate2.toString();
+        });
+      }
+    }
   }
+
+
 
 
   Widget build(BuildContext context) {
@@ -255,34 +305,130 @@ class _buscareventoState extends State<buscarevento> {
     );
   }
 
-  Widget BuscarEvento(){
-    return ListView(
-      padding: EdgeInsets.all(40),
+  Widget BuscarEvento() {
+    return Container(
+      padding: const EdgeInsets.all(20.0),
+      margin: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10.0),
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            "Buscar Evento",
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 20),
+          Text(
+            "Número de Invitación",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 10),
+          TextField(
+            controller: eventid,
+            decoration: InputDecoration(
+              labelText: "Número de Invitación",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: anadiendoInvitado
+                ? null
+                : () async {
+              encontrado = await buscarEvento(eventid.text);
+              if (!encontrado) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Evento no encontrado'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+              setState(() {
+                encontrado = encontrado;
+              });
+            },
+            child: const Text("Buscar"),
+          ),
+          SizedBox(height: 20,),
+          Text("Tipo Evento: ${evento}"),
+          SizedBox(height: 10,),
+          Text("Propiedad de: ${nombre}"),
+          SizedBox(height: 10,),
+          Text("Descripcion: ${descripcion}"),
+          SizedBox(height: 20,),
+          ElevatedButton(
+            onPressed: !encontrado || anadiendoInvitado
+                ? null
+                : () async {
+              setState(() {
+                anadiendoInvitado = true;
+              });
+              agregado = await DB.agregarInvitado(
+                eventid.text,
+                widget.datos['id'],
+              );
+              _showResultSnackBar(agregado);
+              setState(() {
+                anadiendoInvitado = false;
+                agregado = false;
+                eventid.clear();
+              });
+            },
+            child: const Text("Agregar"),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildInfoText(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Numero de invitacion"),
-        SizedBox(height: 10,),
-        TextField(
-          controller: eventid,
-          decoration: InputDecoration(
-              labelText: "numero invitacion"
+        Text(
+          "$label:",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 10,),
-        FilledButton(onPressed: (){
-          buscarEvento(eventid.text);
-        }, child: const Text("Buscar")),
-        SizedBox(height: 20,),
-        Text("Tipo Evento: ${evento}"),
-        SizedBox(height: 10,),
-        Text("Propiedad de: ${nombre}"),
-        SizedBox(height: 10,),
-        Text("Descripcion: ${descripcion}"),
-        SizedBox(height: 20,),
-        FilledButton(onPressed: (){
-          DB.agregarInvitado(eventid.text, widget.datos['id']);
-        }, child: const Text("Agregar"))
-
+        SizedBox(height: 5),
+        Text(
+          value,
+          style: TextStyle(fontSize: 16),
+        ),
+        SizedBox(height: 10),
       ],
+    );
+  }
+
+  void _showResultSnackBar(bool success) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success ? 'Agregado correctamente' : 'Ya estás registrado en el evento',
+        ),
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 
@@ -485,160 +631,297 @@ class _buscareventoState extends State<buscarevento> {
     );
   }
 
-  Widget crearEvento(){
+  Widget crearEvento() {
     return FutureBuilder(
-        future: DB.MisEventos(widget.datos['id']),
-        builder: (context,listaJSON){
-          if(listaJSON.hasData){
-            return Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Evento Nuevo',
-                        style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 20.0),
-                      TextField(
-                        controller: descripcionController,
-                        decoration: InputDecoration(
-                          labelText: "Descripción del Evento",
-                          prefixIcon: Icon(Icons.description_outlined),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          ),
+      future: DB.MisEventos(widget.datos['id']),
+      builder: (context, listaJSON) {
+        if (listaJSON.hasData) {
+          return Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Evento Nuevo',
+                      style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20.0),
+                    TextField(
+                      controller: descripcionController,
+                      decoration: InputDecoration(
+                        labelText: "Descripción del Evento",
+                        prefixIcon: Icon(Icons.description_outlined),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
                       ),
-                      SizedBox(height: 20.0),
-                      TextField(
-                        controller: fechaInicial,
-                        onTap: () => _selectDate(context),
-                        decoration: InputDecoration(
-                          labelText: "Fecha Inicial (dd/mm/aa):",
-                          prefixIcon: Icon(Icons.date_range),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          ),
+                    ),
+                    SizedBox(height: 20.0),
+                    TextField(
+                      controller: fechaInicial,
+                      onTap: () {
+                        _focusNode.unfocus();
+                        _selectDateAndTime(context);
+                      },
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: "Fecha y Hora Inicial:",
+                        prefixIcon: Icon(Icons.date_range),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
                       ),
-                      SizedBox(height: 20.0),
-                      Text('Tipo de Evento:',style: TextStyle(fontSize: 18),),
-                      SizedBox(height: 10.0),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15.0),
-                          border: Border.all(
-                            color: Colors.grey,
-                            width: 1.5,
-                          ),
+                      focusNode: _focusNode,
+                    ),
+                    SizedBox(height: 20.0),
+                    Text('Tipo de Evento:', style: TextStyle(fontSize: 18)),
+                    SizedBox(height: 10.0),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 1.5,
                         ),
-                        child: DropdownButton<String>(
-                          value: tipoEventoSeleccionado,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              tipoEventoSeleccionado = newValue!;
-                            });
-                          },
-                          items: <String>['Boda', 'Bautizo', 'Cumpleaños', 'Baby-Shower', 'Peda']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Text(
-                                  value,
-                                  style: TextStyle(fontSize: 16.0),
-                                ),
+                      ),
+                      child: DropdownButton<String>(
+                        value: tipoEventoSeleccionado,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            tipoEventoSeleccionado = newValue!;
+                          });
+                        },
+                        items: <String>[
+                          'Boda',
+                          'Bautizo',
+                          'Cumpleaños',
+                          'Baby-Shower',
+                          'Peda'
+                        ].map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Text(
+                                value,
+                                style: TextStyle(fontSize: 16.0),
                               ),
-                            );
-                          }).toList(),
-                          icon: Icon(Icons.arrow_drop_down),
-                          isExpanded: true,
-                          elevation: 2,
-                          style: TextStyle(color: Colors.black87),
-                          underline: Container(
-                            height: 10,
-                            color: Colors.transparent,
-                          ),
+                            ),
+                          );
+                        }).toList(),
+                        icon: Icon(Icons.arrow_drop_down),
+                        isExpanded: true,
+                        elevation: 2,
+                        style: TextStyle(color: Colors.black87),
+                        underline: Container(
+                          height: 10,
+                          color: Colors.transparent,
                         ),
                       ),
+                    ),
+                    SizedBox(height: 20.0),
+                    TextField(
+                      controller: fechaFinal,
+                      onTap: () {
+                        _focusNode.unfocus();
+                        _selectDateAndTime2(context);
+                      },
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: "Fecha y Hora Final:",
+                        prefixIcon: Icon(Icons.date_range),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        ),
+                      ),
+                      focusNode: _focusNode,
+                    ),
 
-                      SizedBox(height: 20.0),
-                      TextField(
-                        controller: fechaFinal,
-                        onTap: () => _selectDate2(context),
-                        decoration: InputDecoration(
-                          labelText: "Fecha final (dd/mm/aa):",
-                          prefixIcon: Icon(Icons.date_range),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                          ),
+                    SizedBox(height: 20.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.expand_circle_down_outlined), // Puedes ajustar el icono según tus preferencias
+                            SizedBox(width: 8.0),
+                            Text('Permitir Fotos despues \nde la fecha final'),
+                          ],
                         ),
-                      ),
-                      SizedBox(height: 20.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Permitir agregar fotos después\n de la fecha Final'),
-                          Switch(
-                            value: permitirAgregarFotos,
-                            onChanged: (bool value) {
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200], // Cambia el color de fondo según tus preferencias
+                    borderRadius: BorderRadius.circular(12.0), // Ajusta el radio de los bordes
+                  ),
+                  child: FlutterSwitch(
+                    width: 55.0,
+                    height: 28.0,
+                    valueFontSize: 12.0,
+                    toggleSize: 20.0,
+                    value: permitirAgregarFotos,
+                    borderRadius: 30.0,
+                    padding: 4.0,
+                    activeColor: Colors.blue, // Cambia el color cuando está activado
+                    inactiveColor: Colors.grey, // Cambia el color cuando está desactivado
+                    onToggle: (value) {
+                      setState(() {
+                        permitirAgregarFotos = value;
+                      });
+                    },
+                  ),
+                )
+
+                ],
+                    ),
+                    SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.camera_alt), // Puedes ajustar el icono según tus preferencias
+                            SizedBox(width: 8.0),
+                            Text('Subir primera foto'),
+                          ],
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200], // Cambia el color de fondo según tus preferencias
+                            borderRadius: BorderRadius.circular(12.0), // Ajusta el radio de los bordes
+                          ),
+                          child: FlutterSwitch(
+                            width: 55.0,
+                            height: 28.0,
+                            valueFontSize: 12.0,
+                            toggleSize: 20.0,
+                            value: subirPrimeraFoto,
+                            borderRadius: 30.0,
+                            padding: 4.0,
+                            activeColor: Colors.blue, // Cambia el color cuando está activado
+                            inactiveColor: Colors.grey, // Cambia el color cuando está desactivado
+                            onToggle: (value) {
                               setState(() {
-                                permitirAgregarFotos = value;
+                                subirPrimeraFoto = value;
                               });
                             },
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 16.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
+                        )
+
+                      ],
+                    ),
+
+                    SizedBox(height: 16.0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            if (_validarCampos()) {
+
+                              if (subirPrimeraFoto && idImagen == null) {
+                                _mostrarSnackBar("Favor de seleccionar una foto de su galería o deshabilitar la opción");
+                                return;
+                              }
+
+                              if(!subirPrimeraFoto && tipoEventoSeleccionado == "Boda"){
+                                idImagen = imagenesDefecto[0];
+                              }
+
+                              if(!subirPrimeraFoto && tipoEventoSeleccionado == "Bautizo"){
+                                idImagen = imagenesDefecto[1];
+                              }
+
+                              if(!subirPrimeraFoto && tipoEventoSeleccionado == "Cumplaeños"){
+                                idImagen = imagenesDefecto[2];
+                              }
+
+                              if(!subirPrimeraFoto && tipoEventoSeleccionado == "Baby-Shower"){
+                                idImagen = imagenesDefecto[3];
+                              }
+
+                              if(!subirPrimeraFoto && tipoEventoSeleccionado == "Peda"){
+                                idImagen = imagenesDefecto[4];
+                              }
+
                               Timestamp f1 = Timestamp.fromMillisecondsSinceEpoch(selectedDate!.millisecondsSinceEpoch);
                               Timestamp f2 = Timestamp.fromMillisecondsSinceEpoch(selectedDate2!.millisecondsSinceEpoch);
+
+                              if (f2.compareTo(f1) < 0) {
+                                _mostrarSnackBar("La fecha final no puede ser anterior a la fecha inicial");
+                                return;
+                              }
+
+
                               var datos = {
-                                'admin':widget.datos['id'],
-                                'agreDeFecha':permitirAgregarFotos,
-                                'descipcion':descripcionController.text,
+                                'admin': widget.datos['id'],
+                                'agreDeFecha': permitirAgregarFotos,
+                                'descipcion': descripcionController.text,
                                 'estado': true,
-                                'fechaF':f2,
-                                'fechaI':f1,
+                                'fechaF': f2,
+                                'fechaI': f1,
                                 'imagen': idImagen,
                                 'tipoEvento': tipoEventoSeleccionado,
-                                'invitados':[
-                                ],
+                                'invitados': [],
                               };
                               DB.agregarEvento(datos);
-                            },
-                            child: Text('Crear'),
-                          ),
+
+                              permitirAgregarFotos = false;
+                              descripcionController.clear();
+                              fechaInicial.clear();
+                              fechaFinal.clear();
+                              idImagen = "";
+
+                              setState(() {
+                                _index = 0;
+                              });
+                            } else {
+                              _mostrarSnackBar("Por favor, complete todos los campos");
+                            }
+                          },
+                          child: Text('Crear'),
+                        ),
+
+                        if (subirPrimeraFoto)
                           ElevatedButton(
                             onPressed: () async {
                               idImagen = await _abrirGaleria();
                             },
                             child: Text('Añadir Foto'),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            );
-
-
-          }
-          return Center(child: CircularProgressIndicator(),);
+            ),
+          );
         }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
     );
   }
+
+  bool _validarCampos() {
+    return descripcionController.text.isNotEmpty &&
+        fechaInicial.text.isNotEmpty &&
+        fechaFinal.text.isNotEmpty &&
+        tipoEventoSeleccionado.isNotEmpty;
+  }
+
+  void _mostrarSnackBar(String mensaje) {
+    final snackBar = SnackBar(
+      content: Text(mensaje),
+      duration: Duration(seconds: 3),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime picked = (await showDatePicker(
@@ -716,7 +999,7 @@ class _buscareventoState extends State<buscarevento> {
 
 
   ///////////////future/////////////////////
-  Future<void> buscarEvento(String idEventoBuscado) async {
+  Future<bool> buscarEvento(String idEventoBuscado) async {
 
     Map<String, dynamic>? datosEvento = await DB.buscarEventoPorId(idEventoBuscado);
 
@@ -726,8 +1009,9 @@ class _buscareventoState extends State<buscarevento> {
         nombre = datosEvento['nombreAdmin'];
         descripcion = datosEvento['descipcion'];
       });
+      return true;
     } else {
-      // Manejar el caso en el que el evento no se encuentre
+      return false;
     }
   }
   ///method to update profile picture
@@ -747,10 +1031,6 @@ class _buscareventoState extends State<buscarevento> {
   }
     return false;
   }
-
-
-
-
 
   Future <bool> _updateProfileName(String text) async {
     if (text != null){

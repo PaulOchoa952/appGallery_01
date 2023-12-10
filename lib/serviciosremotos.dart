@@ -123,8 +123,7 @@ class DB {
   }
 
 
-  static Future<void> agregarInvitado(String idEvento,
-      String idInvitado) async {
+  static Future<bool> agregarInvitado(String idEvento, String idInvitado) async {
     try {
       var evento = baseRemota.collection("evento").doc(idEvento);
 
@@ -133,20 +132,31 @@ class DB {
 
       if (datosEvento != null) {
         var invitadosActuales = List<String>.from(datosEvento['invitados']);
-        invitadosActuales.add(idInvitado);
 
-        await evento.update({
-          'invitados': invitadosActuales,
-        });
+        if (!invitadosActuales.contains(idInvitado)) {
+          invitadosActuales.add(idInvitado);
 
-        print("Invitado agregado con éxito.");
+          await evento.update({
+            'invitados': invitadosActuales,
+          });
+
+          print("Invitado agregado con éxito.");
+          return true;
+        } else {
+          print("El invitado con ID: $idInvitado ya existe en el evento con ID: $idEvento");
+          return false;
+        }
       } else {
         print("No se encontraron datos para el evento con ID: $idEvento");
+        return false;
       }
     } catch (e) {
       print("Error al agregar invitado: $e");
+      return false;
     }
   }
+
+
 
 
   static Future<String?> subirArchivo(String path, String nombreImagen) async {
