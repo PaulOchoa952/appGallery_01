@@ -145,8 +145,9 @@ class _buscareventoState extends State<buscarevento> {
             _item(Icons.cake,"Mis Eventos",0),
             _item(Icons.search,"Buscar evento",1),
             _item(Icons.event,"Invitaciones",2),
+            _item(Icons.settings,"Configuracion",4),
             _item(Icons.logout, "Salir", 3),
-            _item(Icons.add_a_photo,"Configuracion",4)
+
           ],
         ),
       ),
@@ -363,6 +364,7 @@ class _buscareventoState extends State<buscarevento> {
                 );
               }
               setState(() {
+
                 encontrado = encontrado;
               });
             },
@@ -406,6 +408,9 @@ class _buscareventoState extends State<buscarevento> {
                 anadiendoInvitado = false;
                 agregado = false;
                 eventid.clear();
+                nombre = "";
+                descripcion="";
+                evento="";
               });
             },
             child: const Text("Agregar"),
@@ -538,7 +543,7 @@ class _buscareventoState extends State<buscarevento> {
                                     contentPadding:
                                     EdgeInsets.fromLTRB(15, 10, 25, 0),
                                     title: Text('${listaJSON.data?[indice]['descipcion']} ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), ),
-                                    subtitle: Text( "Fecha Finalizacion: ${convertirTimestampAFecha(listaJSON.data?[indice]['fechaF'])}"),
+                                    subtitle: Text( "Fecha Inicio: ${convertirTimestampAFecha(listaJSON.data?[indice]['fechaI'])} \nFecha Finalizacion: ${convertirTimestampAFecha(listaJSON.data?[indice]['fechaF'])}"),
 
                                   )),
                             ],
@@ -625,7 +630,7 @@ class _buscareventoState extends State<buscarevento> {
                                     contentPadding:
                                     EdgeInsets.fromLTRB(15, 10, 25, 0),
                                     title: Text('${listaJSON.data?[indice]['descipcion']} de ${listaJSON.data?[indice]['nombreAdmin']}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold), ),
-                                    subtitle: Text( "Fecha Finalizacion: ${convertirTimestampAFecha(listaJSON.data?[indice]['fechaF'])}"),
+                                    subtitle: Text( "Fecha Inicio: ${convertirTimestampAFecha(listaJSON.data?[indice]['fechaI'])} \nFecha Finalizacion: ${convertirTimestampAFecha(listaJSON.data?[indice]['fechaF'])}"),
 
                                   )),
                             ],
@@ -975,6 +980,21 @@ class _buscareventoState extends State<buscarevento> {
                             },
                             child: Text('Añadir Foto'),
                           ),
+                        ElevatedButton(
+                          onPressed: () {
+                            permitirAgregarFotos = false;
+                            descripcionController.clear();
+                            fechaInicial.clear();
+                            fechaFinal.clear();
+                            idImagen = "";
+
+                            setState(() {
+                              _index = 0;
+                            });
+
+                          },
+                          child: Text('Cancelar'),
+                        ),
                       ],
                     ),
                   ],
