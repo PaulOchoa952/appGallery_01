@@ -113,44 +113,49 @@ class _buscareventoState extends State<buscarevento> {
         title:  Text(titulo, style: TextStyle(color: Colors.white),),
         centerTitle: true,
         actions: _botonMagico(),
+        elevation: 4.0,
       ),
       body: dinamico(),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.white,
-                  radius: 40,
-                  child: ClipOval(
-                    child: Container(
-                      width: 2 * 40,
-                      height: 2 * 40,
-                      child: Image.network(
-                        widget.datos['img'],
-                        fit: BoxFit.cover,
+            DrawerHeader(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.white,
+                    radius: 40,
+                    child: ClipOval(
+                      child: Container(
+                        width: 2 * 40,
+                        height: 2 * 40,
+                        child: Image.network(
+                          widget.datos['img'],
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(height: 20,),
-                Text("${widget.datos['nombre']}",style: TextStyle(color:Colors.white,fontSize: 20),)
-              ],
+                  SizedBox(height: 20),
+                  Text(
+                    "${widget.datos['nombre']}",
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  ),
+                ],
+              ),
+              decoration: BoxDecoration(color: Color(0xFFEC5EA4)),
             ),
-              decoration: BoxDecoration(color: Color(0xFFE1BEE7)),
-            ),
-            _item(Icons.cake,"Mis Eventos",0),
-            _item(Icons.search,"Buscar evento",1),
-            _item(Icons.event,"Invitaciones",2),
-            _item(Icons.settings,"Configuracion",4),
+            _item(Icons.cake, "Mis Eventos", 0),
+            _item(Icons.search, "Buscar evento", 1),
+            _item(Icons.event, "Invitaciones", 2),
+            _item(Icons.settings, "Configuración", 4),
             _item(Icons.logout, "Salir", 3),
-
           ],
         ),
-      ),
+      )
+
     );
   }
 
@@ -158,9 +163,10 @@ class _buscareventoState extends State<buscarevento> {
     if (_index == 0) {
       return [
         IconButton(
-          icon: Icon(Icons.add),
+          icon: Icon(Icons.add_circle_outline),
           onPressed: () {
             setState(() {
+              titulo = "Crear Evento";
               _index = 3;
             });
           },
@@ -256,14 +262,10 @@ class _buscareventoState extends State<buscarevento> {
 
   void _handleLogout() async{
     try {
-      // Perform any additional logout logic here
-      // For example, sign out from Firebase
       await FirebaseAuth.instance.signOut();
-
-      // Navigate to the login screen after logout
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Login()), // Import your login screen file
+        MaterialPageRoute(builder: (context) => Login()),
       );
     } catch (e) {
       print("Error during logout: $e");
@@ -720,6 +722,7 @@ class _buscareventoState extends State<buscarevento> {
   }
 
   Widget crearEvento() {
+    titulo = "Crear Evento";
     return FutureBuilder(
       future: DB.MisEventos(widget.datos['id']),
       builder: (context, listaJSON) {
@@ -766,16 +769,39 @@ class _buscareventoState extends State<buscarevento> {
                       focusNode: _focusNode,
                     ),
                     SizedBox(height: 20.0),
-                    Text('Tipo de Evento:', style: TextStyle(fontSize: 18)),
+                    TextField(
+                      controller: fechaFinal,
+                      onTap: () {
+                        _focusNode.unfocus();
+                        _selectDateAndTime2(context);
+                      },
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: "Fecha y Hora Final:",
+                        prefixIcon: Icon(Icons.date_range),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                        ),
+                      ),
+                      focusNode: _focusNode,
+                    ),
+
+                    SizedBox(height: 20.0),
+                    Text(
+                      'Tipo de Evento:',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                     SizedBox(height: 10.0),
                     Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15.0),
+                        borderRadius: BorderRadius.circular(10.0), // Adjusted border radius
                         border: Border.all(
-                          color: Colors.grey,
+                          color: Colors.black54, // Updated border color
                           width: 1.5,
                         ),
+                        color: Colors.white, // Added background color
                       ),
+                      padding: EdgeInsets.symmetric(horizontal: 12.0), // Added horizontal padding
                       child: DropdownButton<String>(
                         value: tipoEventoSeleccionado,
                         onChanged: (String? newValue) {
@@ -806,27 +832,9 @@ class _buscareventoState extends State<buscarevento> {
                         elevation: 2,
                         style: TextStyle(color: Colors.black87),
                         underline: Container(
-                          height: 10,
-                          color: Colors.transparent,
+                          height: 0, // Removed underline
                         ),
                       ),
-                    ),
-                    SizedBox(height: 20.0),
-                    TextField(
-                      controller: fechaFinal,
-                      onTap: () {
-                        _focusNode.unfocus();
-                        _selectDateAndTime2(context);
-                      },
-                      readOnly: true,
-                      decoration: InputDecoration(
-                        labelText: "Fecha y Hora Final:",
-                        prefixIcon: Icon(Icons.date_range),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                        ),
-                      ),
-                      focusNode: _focusNode,
                     ),
 
                     SizedBox(height: 20.0),
@@ -835,15 +843,15 @@ class _buscareventoState extends State<buscarevento> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.expand_circle_down_outlined), // Puedes ajustar el icono según tus preferencias
+                            Icon(Icons.expand_circle_down_outlined),
                             SizedBox(width: 8.0),
                             Text('Permitir Fotos despues \nde la fecha final'),
                           ],
                         ),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[200], // Cambia el color de fondo según tus preferencias
-                    borderRadius: BorderRadius.circular(12.0), // Ajusta el radio de los bordes
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: FlutterSwitch(
                     width: 55.0,
@@ -871,15 +879,15 @@ class _buscareventoState extends State<buscarevento> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.camera_alt), // Puedes ajustar el icono según tus preferencias
+                            Icon(Icons.camera_alt),
                             SizedBox(width: 8.0),
                             Text('Subir primera foto'),
                           ],
                         ),
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey[200], // Cambia el color de fondo según tus preferencias
-                            borderRadius: BorderRadius.circular(12.0), // Ajusta el radio de los bordes
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(12.0),
                           ),
                           child: FlutterSwitch(
                             width: 55.0,
@@ -907,6 +915,13 @@ class _buscareventoState extends State<buscarevento> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         ElevatedButton(
+                          style: ElevatedButton.styleFrom(// Text color
+                            elevation: 3, // Button elevation
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0), // Adjusted border radius
+                            ),
+                          ),
+
                           onPressed: () {
                             if (_validarCampos()) {
 
@@ -964,23 +979,29 @@ class _buscareventoState extends State<buscarevento> {
                               idImagen = "";
 
                               setState(() {
+                                titulo = "Mis Eventos";
                                 _index = 0;
                               });
                             } else {
                               _mostrarSnackBar("Por favor, complete todos los campos");
                             }
                           },
-                          child: Text('Crear'),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0), // Adjusted padding
+                            child: Text(
+                              'Crear',
+                              style: TextStyle(fontSize: 16.0),
+                            ),
+                          ),
                         ),
 
-                        if (subirPrimeraFoto)
-                          ElevatedButton(
-                            onPressed: () async {
-                              idImagen = await _abrirGaleria();
-                            },
-                            child: Text('Añadir Foto'),
-                          ),
                         ElevatedButton(
+                          style: ElevatedButton.styleFrom(// Text color
+                            elevation: 3, // Button elevation
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0), // Adjusted border radius
+                            ),
+                          ),
                           onPressed: () {
                             permitirAgregarFotos = false;
                             descripcionController.clear();
@@ -989,12 +1010,40 @@ class _buscareventoState extends State<buscarevento> {
                             idImagen = "";
 
                             setState(() {
+                              titulo = "Mis Eventos";
                               _index = 0;
                             });
 
                           },
-                          child: Text('Cancelar'),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0), // Adjusted padding
+                            child: Text(
+                              'Cancelar',
+                              style: TextStyle(fontSize: 16.0),
+                            ),
+                          ),
                         ),
+
+                        if (subirPrimeraFoto)
+                          ElevatedButton(
+                            onPressed: () async {
+                              idImagen = await _abrirGaleria();
+                            },
+                            style: ElevatedButton.styleFrom(// Text color
+                              elevation: 3, // Button elevation
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0), // Adjusted border radius
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0), // Adjusted padding
+                              child: Text(
+                                'Añadir Foto',
+                                style: TextStyle(fontSize: 16.0),
+                              ),
+                            ),
+                          ),
+
                       ],
                     ),
                   ],
@@ -1123,7 +1172,6 @@ class _buscareventoState extends State<buscarevento> {
     if (newImageUrl != null) {
     try{
       await DB.actualizarImagenUsuario(widget.datos['id'], newImageUrl);
-        // Assuming you have a state variable to store the user's image URL
         setState(() {
           widget.datos['img'] = newImageUrl;
         });

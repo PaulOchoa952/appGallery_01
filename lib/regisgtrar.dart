@@ -278,6 +278,21 @@ class _registrarState extends State<registrar> {
                             ),
                           ),
                         ),
+                        SizedBox(height: 15,),
+                        FadeInUp(
+                          duration: Duration(milliseconds: 2000),
+                          child:  TextButton(
+                            onPressed: (){
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => Login()));
+                            },
+                            style: TextButton.styleFrom(
+                              primary: Colors.purpleAccent,
+                            ),
+                            child: Text("Atras"),
+                          ),
+                        ),
                       ],
                     ),
                   ),
