@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:video2u3/serviciosremotos.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:photo_view/photo_view.dart';
@@ -364,8 +365,18 @@ class _ImagenesPaginaState extends State<ImagenesPagina> {
                       },
                     );
                   },
-                  icon: Icon(Icons.delete_outline, color: Colors.white,)
+                  icon: Icon(Icons.delete_outline, color: Colors.white,),
               ),
+              IconButton(onPressed: (){
+                FileDownloader.downloadFile(url: widget.imagenes[_indice],
+
+                    onDownloadCompleted: (value){
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Imagen Descargada"), duration: Duration(seconds: 1),));
+                    },
+                    onDownloadError: (error){
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al descargar"), duration: Duration(seconds: 1),));
+                    });
+              }, icon: Icon(Icons.download, color: Colors.white,))
             ],
           ),
         ),

@@ -47,6 +47,7 @@ dependencies:
   carousel_slider: ^4.2.1
   permission_handler: ^10.4.5
   flutter_switch: ^0.3.2
+  flutter_file_downloader: ^1.2.0
 
 
 dev_dependencies:
