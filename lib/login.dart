@@ -280,7 +280,7 @@ class _LoginState extends State<Login> {
                           style: TextButton.styleFrom(
                             primary: Colors.purpleAccent,
                           ),
-                          child: Text("Regritarse"),
+                          child: Text("Registrarse"),
                         ),
 
                       ),
