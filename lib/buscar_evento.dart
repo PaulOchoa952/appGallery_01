@@ -413,6 +413,7 @@ class _buscareventoState extends State<buscarevento> {
                 nombre = "";
                 descripcion="";
                 evento="";
+                encontrado = false;
               });
             },
             child: const Text("Agregar"),
